@@ -25,6 +25,7 @@
 	
 	<instructions type="install">
 		<instruction type="file">files.tar</instruction>
+		<instruction type="template">template.tar</instruction>
 		<instruction type="templateListener">templateListener.xml</instruction>
 	</instructions>
 </package>
