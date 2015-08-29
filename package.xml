@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package name="de.mysterycode.api.dompdf" xmlns="http://www.woltlab.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.woltlab.com http://www.woltlab.com/XSD/maelstrom/package.xsd">
+ 	<packageinformation>
+		<packagename><![CDATA[Elevator]]></packagename>
+		<packagedescription><![CDATA[Be lazy, use the elevator!]]></packagedescription>
+		
+		<version><![CDATA[1.1.0 Alpha 1]]></version>
+		<date><![CDATA[2015-08-30]]></date>
+		
+		<packageurl>http://www.mysterycode.de/</packageurl>
+	</packageinformation>
+	
+	<requiredpackages>
+		<requiredpackage minversion="2.1.0"><![CDATA[com.woltlab.wcf]]></requiredpackage>
+	</requiredpackages>
+	
+	<excludedpackages>
+		<excludedpackage version="2.2.0 Alpha 1"><![CDATA[com.woltlab.wcf]]></excludedpackage>
+	</excludedpackages>
+	
+	<authorinformation>
+		<author><![CDATA[Florian Gail]]></author>
+		<authorurl><![CDATA[http://www.mysterycode.de]]></authorurl>
+	</authorinformation>
+	
+	<instructions type="install">
+		<instruction type="file">files.tar</instruction>
+		<instruction type="templateListener">templateListener.xml</instruction>
+	</instructions>
+</package>
