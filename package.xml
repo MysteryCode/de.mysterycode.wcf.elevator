@@ -4,7 +4,7 @@
 		<packagename><![CDATA[Elevator]]></packagename>
 		<packagedescription><![CDATA[Be lazy, use the elevator!]]></packagedescription>
 		
-		<version><![CDATA[1.0.0]]></version>
+		<version><![CDATA[1.0.1]]></version>
 		<date><![CDATA[2015-08-30]]></date>
 		
 		<packageurl>http://www.mysterycode.de/</packageurl>
@@ -27,5 +27,9 @@
 		<instruction type="file">files.tar</instruction>
 		<instruction type="template">template.tar</instruction>
 		<instruction type="templateListener">templateListener.xml</instruction>
+	</instructions>
+	
+	<instructions type="update" fromversion="1.0.0">
+		<instruction type="template">template.tar</instruction>
 	</instructions>
 </package>
