@@ -1,4 +1,4 @@
-$('.footerToTop, .footerToTopLeft, .toTopLink').each(
+$('.pageAction .toTop').each(
 	function (i, e) {
 		var elevator = new Elevator({
 			element: this,

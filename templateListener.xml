@@ -3,16 +3,28 @@
 	<import>
 		<templatelistener name="elevatorInclude">
 			<environment>user</environment>
-			<templatename>headInclude</templatename>
+			<templatename>headIncludeJavaScript</templatename>
 			<eventname>javascriptInclude</eventname>
 			<templatecode><![CDATA[<script data-relocate="true" src="{@$__wcf->getPath()}js/3rdParty/elevator{if !ENABLE_DEBUG_MODE}.min{/if}.js?v={@LAST_UPDATE_TIME}"></script>]]></templatecode>
 		</templatelistener>
 		
 		<templatelistener name="elevatorInit">
 			<environment>user</environment>
-			<templatename>headInclude</templatename>
+			<templatename>headIncludeJavaScript</templatename>
 			<eventname>javascriptInit</eventname>
 			<templatecode><![CDATA[{include file='__elevatorInit'}]]></templatecode>
 		</templatelistener>
 	</import>
+	<delete>
+		<templatelistener name="elevatorInclude">
+			<environment>user</environment>
+			<templatename>headInclude</templatename>
+			<eventname>javascriptInclude</eventname>
+		</templatelistener>
+		<templatelistener name="elevatorInit">
+			<environment>user</environment>
+			<templatename>headInclude</templatename>
+			<eventname>javascriptInit</eventname>
+		</templatelistener>
+	</delete>
 </data>

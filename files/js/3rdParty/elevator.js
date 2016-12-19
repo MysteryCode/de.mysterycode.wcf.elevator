@@ -9,201 +9,182 @@
  * Elevator.js
  *********************************************/
 
-var Elevator = function(options) {
+var Elevator = function (options) {
+	'use strict';
 
-    'use strict';
+	// Elements
+	var body = null;
 
-    // Elements
-    var body = null;
+	// Scroll vars
+	var animation = null;
+	var duration = null; // ms
+	var customDuration = false;
+	var startTime = null;
+	var startPosition = null;
+	var elevating = false;
 
-    // Scroll vars
-    var animation = null;
-    var duration = null; // ms
-    var customDuration = false;
-    var startTime = null;
-    var startPosition = null;
-    var elevating = false;
+	var mainAudio;
+	var endAudio;
 
-    var mainAudio;
-    var endAudio;
+	var that = this;
 
-    var that = this;
-    
-    /**
-     * Utils
-     */
+	/**
+	 * Utils
+	 */
+	// Thanks Mr Penner - http://robertpenner.com/easing/
+	function easeInOutQuad(t, b, c, d) {
+		t /= d / 2;
+		if (t < 1) return c / 2 * t * t + b;
+		t--;
+		return -c / 2 * ( t * ( t - 2 ) - 1 ) + b;
+	}
 
-    // Thanks Mr Penner - http://robertpenner.com/easing/
-    function easeInOutQuad( t, b, c, d ) {
-        t /= d / 2;
-        if ( t < 1 ) return c / 2 * t * t + b;
-        t--;
-        return -c / 2 * ( t * ( t -2 ) - 1 ) + b;
-    }
+	function extendParameters(options, defaults) {
+		for (var option in defaults) {
+			var t = options[option] === undefined && typeof option !== "function";
+			if (t) {
+				options[option] = defaults[option];
+			}
+		}
+		return options;
+	}
 
-    function extendParameters(options, defaults){
-        for( var option in defaults ){
-            var t = options[option] === undefined && typeof option !== "function";
-            if(t){
-                options[option] = defaults[option];
-            }
-        }
-        return options;
-    }
+	/**
+	 * Main
+	 */
+	// Time is passed through requestAnimationFrame, what a world!
+	function animateLoop(time) {
+		if (!startTime) {
+			startTime = time;
+		}
 
-    /**
-     * Main
-     */
+		var timeSoFar = time - startTime;
+		var easedPosition = easeInOutQuad(timeSoFar, startPosition, -startPosition, duration);
 
-    // Time is passed through requestAnimationFrame, what a world!
-    function animateLoop( time ) {
-        if ( !startTime ) {
-            startTime = time;
-        }
+		window.scrollTo(0, easedPosition);
 
-        var timeSoFar = time - startTime;
-        var easedPosition = easeInOutQuad(timeSoFar, startPosition, -startPosition, duration);
+		if (timeSoFar < duration) {
+			animation = requestAnimationFrame(animateLoop);
+		} else {
+			animationFinished();
+		}
+	}
 
-        window.scrollTo(0, easedPosition);
+	this.elevate = function () {
+		if (elevating) {
+			return;
+		}
 
-        if( timeSoFar < duration ) {
-            animation = requestAnimationFrame(animateLoop);
-        } else {
-            animationFinished();
-        }
-     }
+		elevating = true;
+		startPosition = (document.documentElement.scrollTop || body.scrollTop);
 
-//            ELEVATE!
-//              /
-//         ____
-//       .'    '=====<0
-//       |======|
-//       |======|
-//       [IIIIII[\--()
-//       |_______|
-//       C O O O D
-//      C O  O  O D
-//     C  O  O  O  D
-//     C__O__O__O__D
-//    [_____________]
-    this.elevate = function() {
+		// No custom duration set, so we travel at pixels per millisecond. (0.75px per ms)
+		if (!customDuration) {
+			duration = (startPosition * 1.5);
+		}
 
-        if( elevating ) {
-            return;
-        }
+		requestAnimationFrame(animateLoop);
 
-        elevating = true;
-        startPosition = (document.documentElement.scrollTop || body.scrollTop);
+		// Start music!
+		if (mainAudio) {
+			mainAudio.play();
+		}
+	};
 
-        // No custom duration set, so we travel at pixels per millisecond. (0.75px per ms)
-        if( !customDuration ) {
-            duration = (startPosition * 1.5);
-        }
+	function browserMeetsRequirements() {
+		return window.requestAnimationFrame && window.Audio && window.addEventListener;
+	}
 
-        requestAnimationFrame( animateLoop );
+	function resetPositions() {
+		startTime = null;
+		startPosition = null;
+		elevating = false;
+	}
 
-        // Start music!
-        if( mainAudio ) {
-            mainAudio.play();
-        }
-    };
+	function animationFinished() {
+		resetPositions();
 
-    function browserMeetsRequirements() {
-        return window.requestAnimationFrame && window.Audio && window.addEventListener;
-    }
+		// Stop music!
+		if (mainAudio) {
+			mainAudio.pause();
+			mainAudio.currentTime = 0;
+		}
 
-    function resetPositions() {
-        startTime = null;
-        startPosition = null;
-        elevating = false;
-    }
+		if (endAudio) {
+			endAudio.play();
+		}
+	}
 
-    function animationFinished() {
+	function onWindowBlur() {
+		// If animating, go straight to the top. And play no more music.
+		if (elevating) {
 
-        resetPositions();
+			cancelAnimationFrame(animation);
+			resetPositions();
 
-        // Stop music!
-        if( mainAudio ) {
-            mainAudio.pause();
-            mainAudio.currentTime = 0;
-        }
+			if (mainAudio) {
+				mainAudio.pause();
+				mainAudio.currentTime = 0;
+			}
 
-        if( endAudio ) {
-            endAudio.play();
-        }
-    }
+			window.scrollTo(0, 0);
+		}
+	}
 
-    function onWindowBlur() {
+	function bindElevateToElement(element) {
+		if (element.addEventListener) {
+			element.addEventListener('click', that.elevate, false);
+		} else {
+			// Older browsers
+			element.attachEvent('onclick', function () {
+				document.documentElement.scrollTop = 0;
+				document.body.scrollTop = 0;
+				window.scroll(0, 0);
+			});
+		}
+	}
 
-        // If animating, go straight to the top. And play no more music.
-        if( elevating ) {
+	function init(_options) {
+		// Bind to element click event, if need be.
+		body = document.body;
 
-            cancelAnimationFrame( animation );
-            resetPositions();
+		var defaults = {
+			duration: undefined,
+			mainAudio: false,
+			endAudio: false,
+			preloadAudio: true,
+			loopAudio: true,
+		};
 
-            if( mainAudio ) {
-                mainAudio.pause();
-                mainAudio.currentTime = 0;
-            }
+		_options = extendParameters(_options, defaults);
 
-            window.scrollTo(0, 0);
-        }
-    }
+		if (_options.element) {
+			bindElevateToElement(_options.element);
+		}
 
-    function bindElevateToElement( element ) {
-        if( element.addEventListener ) {
-            element.addEventListener('click', that.elevate, false);
-        } else {
-            // Older browsers
-            element.attachEvent('onclick', function() {
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-                window.scroll(0, 0);
-            });
-        }
-    }
+		// Take the stairs instead
+		if (!browserMeetsRequirements()) {
+			return;
+		}
 
-    function init( _options ) {
-        // Bind to element click event, if need be.
-        body = document.body;
+		if (_options.duration) {
+			customDuration = true;
+			duration = _options.duration;
+		}
 
-        var defaults = {
-            duration: undefined,
-            mainAudio: false,
-            endAudio: false,
-            preloadAudio: true,
-            loopAudio: true,
-        };
+		window.addEventListener('blur', onWindowBlur, false);
 
-        _options = extendParameters(_options, defaults);
+		if (_options.mainAudio) {
+			mainAudio = new Audio(_options.mainAudio);
+			mainAudio.setAttribute('preload', _options.preloadAudio);
+			mainAudio.setAttribute('loop', _options.loopAudio);
+		}
 
-        if( _options.element ) {
-            bindElevateToElement( _options.element );
-        }
+		if (_options.endAudio) {
+			endAudio = new Audio(_options.endAudio);
+			endAudio.setAttribute('preload', 'true');
+		}
+	}
 
-        // Take the stairs instead
-        if( !browserMeetsRequirements() ) {
-            return;
-        }
-
-        if( _options.duration ) {
-            customDuration = true;
-            duration = _options.duration;
-        }
-
-        window.addEventListener('blur', onWindowBlur, false);
-
-        if( _options.mainAudio ) {
-            mainAudio = new Audio( _options.mainAudio );
-            mainAudio.setAttribute( 'preload', _options.preloadAudio );
-            mainAudio.setAttribute( 'loop', _options.loopAudio );
-        }
-
-        if( _options.endAudio ) {
-            endAudio = new Audio( _options.endAudio );
-            endAudio.setAttribute( 'preload', 'true' );
-        }
-    }
-
-    init(options);
+	init(options);
 };
